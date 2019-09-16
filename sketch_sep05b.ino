@@ -1,4 +1,5 @@
 #include "EnableInterrupt.h"
+#include <EEPROM.h>
 
 #define SERIAL_PORT_SPEED 38400
 #define RC_NUM_CHANNELS  10
@@ -6,15 +7,19 @@
 
 #define alpha 0.986
 
-#define RC_CH1  0
-#define RC_CH2  1
-#define RC_CH3  2
-#define RC_CH4  3
+#define RC_CH1  0 //AIL
+#define RC_CH2  1 //ELE
+#define RC_CH3  2 //THR
+#define RC_CH4  3 //RUD
 #define RC_CH5  4
 #define RC_CH6  5
 #define RC_CH7  6
 #define RC_CH8  7
 #define us_default 1500
+
+#define X 0
+#define Y 1
+#define Z 2
 
 #define RC_CH1_INPUT  2
 #define RC_CH2_INPUT  3
@@ -25,12 +30,25 @@
 #define RC_CH7_INPUT  8
 #define RC_CH8_INPUT  11
 
+#define RCin_offset 6
+
+
+void Calibrate_RCT(void);
+
 uint16_t rc_values[RC_NUM_CHANNELS]={us_default,us_default,900,us_default,us_default,us_default,us_default,us_default,us_default,us_default};
 uint32_t rc_start[RC_NUM_CHANNELS];
-uint32_t temp1;
+uint16_t calibration_value[6]={0,0,0,0,0,0,0};
 volatile uint16_t rc_shared[RC_NUM_CHANNELS]={us_default,us_default,900,us_default,us_default,us_default,us_default,us_default,us_default,us_default};
 
+uint16_t cal_RCusec_max[4]={0x00FF,0x00FF,0x00FF,0x00FF};
+uint16_t cal_RCusec_min[4]={0x0FFF,0x0FFF,0x0FFF,0x0FFF};
+
+float cal_MAG[3]={0.0f,0.0f,0.0f};
+float cal_ACCL[3]={0.0f,0.0f,0.0f};
+float cal_GYRO[3]={0.0f,0.0f,0.0f};
+
 char c=0;
+int eeAddress = 0;
 
 void rc_read_values() {
   noInterrupts();
@@ -68,6 +86,8 @@ void calc_ch8() { calc_input(RC_CH8, RC_CH8_INPUT); }
 void setup() {
   
   DDRC|=0b00001000;
+  
+  uint16_t *temp;
 
   Serial.begin(SERIAL_PORT_SPEED);
  
@@ -101,8 +121,67 @@ void setup() {
   c=Serial.read();
   while(!((c=='4')||(c=='6')||(c=='8')||(c=='A')))
   {
+  c=0;
   c=Serial.read();
-  delay(1);
+  if(c=='K')
+  {
+    Calibrate_RCT(void);
+    //save the calibration value to eeprom
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH1]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH2]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH3]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH4]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH1]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH2]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH3]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
+    delay(10);
+    
+    Serial.println('1');
+  }
+  
+  else if(c=='R')
+  {
+    //read the calibration value from eeprom for RC
+    eeAddress=0;
+    
+    EEPROM.get(eeAddress,cal_RCusec_max[RC_CH1]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH1]); Serial.print(',');
+    EEPROM.get(eeAddress,cal_RCusec_max[RC_CH2]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH2]); Serial.print(',');
+    EEPROM.get(eeAddress,cal_RCusec_max[RC_CH3]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH3]); Serial.print(',');
+    EEPROM.get(eeAddress,cal_RCusec_max[RC_CH4]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH4]); Serial.print(',');
+    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH1]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH1]); Serial.print(',');
+    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH2]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH2]); Serial.print(',');
+    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH3]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH3]); Serial.print(',');
+    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
+    Serial.print(cal_RCusec_max[RC_CH4]); Serial.println(',');
+   
+  }
+  else if(c=='M')
+  {
+    //save the mag calibration data
+    
+  }
+  else if(c=='G')
+  {
+   //read calibration data for mag 
+  }
+
+  delay(10);
   }
 }
 
@@ -135,3 +214,65 @@ delay(1);
   }
 delay(16);
 }
+
+void Calibrate_RCT(void)
+{
+	uint16_t rc_in_temp[6];
+	uint16_t j;
+		
+	for(j=0;j<1000;j++)
+	{
+		memset(rc_in_temp,0,sizeof(rc_in_temp));	
+    rc_read_values();
+    memcpy(rc_in_temp,(const void *)rc_values,sizeof(rc_in_temp));
+    
+//Take Max value of pwm Max width time in micro_sec 
+		
+		if(rc_in_temp[RC_CH1]>cal_RCusec_max[RC_CH1])
+		{
+			cal_RCusec_max[RC_CH1]=rc_in_temp[RC_CH1];
+		}	
+		if(rc_in_temp[RC_CH2]>cal_RCusec_max[RC_CH2])
+		{
+			cal_RCusec_max[RC_CH2]=rc_in_temp[RC_CH2];
+		}		
+		if(rc_in_temp[RC_CH3]>cal_RCusec_max[RC_CH3])
+		{
+			cal_RCusec_max[RC_CH3]=rc_in_temp[RC_CH3];
+		}		
+		if(rc_in_temp[RC_CH4]>cal_RCusec_max[RC_CH4])
+		{
+			cal_RCusec_max[RC_CH4]=rc_in_temp[RC_CH4];
+		}
+		
+//Take Min value of pwm Min width time in micro_sec 
+		
+		if(rc_in_temp[RC_CH1]<cal_RCusec_min[RC_CH1])
+		{
+			cal_RCusec_min[RC_CH1]=rc_in_temp[RC_CH1];
+		}
+		if(rc_in_temp[RC_CH2]<cal_RCusec_min[RC_CH2])
+		{
+			cal_RCusec_min[RC_CH2]=rc_in_temp[RC_CH2];
+		}		
+		if(rc_in_temp[RC_CH3]<cal_RCusec_min[RC_CH3])
+		{
+			cal_RCusec_min[RC_CH3]=rc_in_temp[RC_CH3];
+		}		
+		if(rc_in_temp[RC_CH4]<cal_RCusec_min[RC_CH4])
+		{
+			cal_RCusec_min[RC_CH4]=rc_in_temp[RC_CH4];
+		}
+		PORTC^=status_led;
+		delay(100);
+	}
+	
+	cal_RCusec_max[RC_CH1]+=RCin_offset; cal_RCusec_min[RC_CH1]-=RCin_offset;
+	cal_RCusec_max[RC_CH2]+=RCin_offset; cal_RCusec_min[RC_CH2]-=RCin_offset;
+	cal_RCusec_max[RC_CH3]+=RCin_offset; cal_RCusec_min[RC_CH3]-=RCin_offset;
+	cal_RCusec_max[RC_CH4]+=RCin_offset; cal_RCusec_min[RC_CH4]-=RCin_offset;
+  
+  PORTC&=~status_led;
+  delay(100);
+}
+
