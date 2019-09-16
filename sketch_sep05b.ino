@@ -34,6 +34,7 @@
 
 
 void Calibrate_RCT(void);
+void decode_imu_data(char *);
 
 uint16_t rc_values[RC_NUM_CHANNELS]={us_default,us_default,900,us_default,us_default,us_default,us_default,us_default,us_default,us_default};
 uint32_t rc_start[RC_NUM_CHANNELS];
@@ -48,7 +49,10 @@ float cal_ACCL[3]={0.0f,0.0f,0.0f};
 float cal_GYRO[3]={0.0f,0.0f,0.0f};
 
 char c=0;
+char buf_imu[40]={0};
+
 int eeAddress = 0;
+int temp_addr;
 
 void rc_read_values() {
   noInterrupts();
@@ -87,7 +91,7 @@ void setup() {
   
   DDRC|=0b00001000;
   
-  uint16_t *temp;
+  char temp=0,i=0;
 
   Serial.begin(SERIAL_PORT_SPEED);
  
@@ -144,7 +148,9 @@ void setup() {
     delay(10);
     EEPROM.put(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
     delay(10);
-    
+    temp=eeAddress;
+    EEPROM.put(eeAddress,temp);  eeAddress+=sizeof(uint16_t);
+	temp += sizeof(uint16_t);
     Serial.println('1');
   }
   
@@ -152,7 +158,6 @@ void setup() {
   {
     //read the calibration value from eeprom for RC
     eeAddress=0;
-    
     EEPROM.get(eeAddress,cal_RCusec_max[RC_CH1]);  eeAddress+=sizeof(uint16_t);
     Serial.print(cal_RCusec_max[RC_CH1]); Serial.print(',');
     EEPROM.get(eeAddress,cal_RCusec_max[RC_CH2]);  eeAddress+=sizeof(uint16_t);
@@ -171,14 +176,41 @@ void setup() {
     Serial.print(cal_RCusec_max[RC_CH4]); Serial.println(',');
    
   }
-  else if(c=='M')
+  else if(c=='I')
   {
-    //save the mag calibration data
-    
+    //save the IMU calibration data	  
+	while(temp=Serial.read())
+	{
+	buf_imu[i++]=temp;
+	if(temp=='\n;)
+	   {
+		   buf_imu[i]=0;i=0;
+		   break;
+	   }	
+	}
+	decode_imu_data(buf_imu);
+
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH1]);  eeAddress+=sizeof(float);
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH2]);  eeAddress+=sizeof(uint16_t);
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH3]);  eeAddress+=sizeof(uint16_t);
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_max[RC_CH4]);  eeAddress+=sizeof(uint16_t);
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH1]);  eeAddress+=sizeof(uint16_t);
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH2]);  eeAddress+=sizeof(uint16_t);
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH3]);  eeAddress+=sizeof(uint16_t);
+	    delay(10);
+	    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
+	    delay(10);
   }
   else if(c=='G')
   {
-   //read calibration data for mag 
+   //read calibration data for IMU 
   }
 
   delay(10);
@@ -276,3 +308,11 @@ void Calibrate_RCT(void)
   delay(100);
 }
 
+void decode_imu_data(char *p)
+{
+sscanf(p,"%f,%f,%f,%f,%f,%f,%f,%f,%f",&cal_MAG[X],&cal_MAG[Y],&cal_MAG[Z],&cal_ACCL[X],&cal_ACCL[Y],&cal_ACCL[Z],&cal_GYRO[X],&cal_GYRO[Y],&cal_GYRO[Z]);
+}
+		   
+		   
+   
+	   
