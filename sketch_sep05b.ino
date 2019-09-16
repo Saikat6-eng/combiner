@@ -4,7 +4,7 @@
 #define RC_NUM_CHANNELS  10
 #define status_led (1<<3)
 
-#define alpha 0.968
+#define alpha 0.986
 
 #define RC_CH1  0
 #define RC_CH2  1
@@ -14,7 +14,7 @@
 #define RC_CH6  5
 #define RC_CH7  6
 #define RC_CH8  7
-#define uc_default 1500
+#define us_default 1500
 
 #define RC_CH1_INPUT  2
 #define RC_CH2_INPUT  3
@@ -25,10 +25,10 @@
 #define RC_CH7_INPUT  8
 #define RC_CH8_INPUT  11
 
-uint16_t rc_values[RC_NUM_CHANNELS]={uc_default,uc_default,900,uc_default,uc_default,uc_default,uc_default,uc_default,uc_default,uc_default};
+uint16_t rc_values[RC_NUM_CHANNELS]={us_default,us_default,900,us_default,us_default,us_default,us_default,us_default,us_default,us_default};
 uint32_t rc_start[RC_NUM_CHANNELS];
 uint32_t temp1;
-volatile uint16_t rc_shared[RC_NUM_CHANNELS]={uc_default,uc_default,900,uc_default,uc_default,uc_default,uc_default,uc_default,uc_default,uc_default};
+volatile uint16_t rc_shared[RC_NUM_CHANNELS]={us_default,us_default,900,us_default,us_default,us_default,us_default,us_default,us_default,us_default};
 
 char c=0;
 
@@ -40,11 +40,13 @@ void rc_read_values() {
 }
 
 void calc_input(uint8_t channel, uint8_t input_pin) {
+  uint16_t rc_compare,temp;
   if (digitalRead(input_pin) == HIGH) {
     rc_start[channel] = micros();
   } else {
-    uint16_t rc_compare = (uint16_t)(micros() - rc_start[channel]);
-    rc_shared[channel] = rc_compare&0x0FFF;
+    rc_compare = (uint16_t)(micros() - rc_start[channel]);
+    temp = rc_compare&0x0FFF;
+    rc_shared[channel] = (uint16_t)((1-alpha)*rc_shared[channel] + (alpha * temp));    
   }
 }
 uint16_t set_filter(uint16_t value_out, uint16_t value_in)
@@ -98,8 +100,10 @@ void setup() {
   while(Serial.available()==0);
   c=Serial.read();
   while(!((c=='4')||(c=='6')||(c=='8')||(c=='A')))
+  {
   c=Serial.read();
-
+  delay(1);
+  }
 }
 
 void loop() {
