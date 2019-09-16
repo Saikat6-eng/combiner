@@ -52,7 +52,7 @@ char c=0;
 char buf_imu[40]={0};
 
 int eeAddress = 0;
-int temp_addr;
+int temp_addr = 16;
 
 void rc_read_values() {
   noInterrupts();
@@ -148,9 +148,6 @@ void setup() {
     delay(10);
     EEPROM.put(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
     delay(10);
-    temp_addr=eeAddress;
-    EEPROM.put(eeAddress,temp_addr);  eeAddress+=sizeof(uint16_t);
-	temp_addr += sizeof(uint16_t);
     Serial.println('1');
   }
   
