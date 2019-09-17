@@ -104,8 +104,6 @@ Serial.begin(SERIAL_PORT_SPEED);
 UCSR0C |= (1 << UCSZ01) | (1 << UCSZ00);
  // Use 8-bit character sizes 
 UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
-	
-sei();
  
   delay(100);
   pinMode(RC_CH1_INPUT, INPUT);
@@ -129,6 +127,8 @@ sei();
   enableInterrupt(RC_CH6_INPUT, calc_ch6, CHANGE);
   enableInterrupt(RC_CH7_INPUT, calc_ch7, CHANGE);
   enableInterrupt(RC_CH8_INPUT, calc_ch8, CHANGE);
+	
+  sei();
 
   while(!((buf_isr[0]=='4')||(buf_isr[0]=='6')||(buf_isr[0]=='8')||(buf_isr[0]=='A')))
   {
@@ -327,7 +327,7 @@ void Calibrate_RCT(void)
 
 void decode_imu_data(char *p)
 {
-sscanf(p,"%f,%f,%f,%f,%f,%f,%f,%f,%f",&cal_MAG[X],&cal_MAG[Y],&cal_MAG[Z],&cal_ACCL[X],&cal_ACCL[Y],&cal_ACCL[Z],&cal_GYRO[X],&cal_GYRO[Y],&cal_GYRO[Z]);
+sscanf(p,"%f,%f,%f,%f,%f,%f,%f,%f,%f",cal_MAG[X],cal_MAG[Y],cal_MAG[Z],cal_ACCL[X],cal_ACCL[Y],cal_ACCL[Z],cal_GYRO[X],cal_GYRO[Y],cal_GYRO[Z]);
 }
 		   
 		   
