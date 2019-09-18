@@ -65,9 +65,9 @@ int temp_addr = 16;
 // 	buf_isr[i++]=c;
 // 	if(c=='\n'){
 // 	i=buf_isr[i-1]=0;
+//	isr_cmplt_flag=1;
 // 	}
 // Serial.println(c);	
-// isr_cmplt_flag=1;
 
 // interrupts();
 // }
@@ -79,9 +79,9 @@ isr_cmplt_flag=0;
 	buf_isr[i++]=c;
 	if(c=='\n'){
 	i=buf_isr[i-1]=0;
+	isr_cmplt_flag=1;
 	}
 Serial.println(c);	
-isr_cmplt_flag=1;
 }
 
 void rc_read_values() {
