@@ -55,33 +55,15 @@ volatile char isr_cmplt_flag=0;
 int eeAddress = 0;
 int temp_addr = 16;
 
-// ISR(USART_RXC_vect)
-// {	
-// isr_cmplt_flag=0;
-
-// noInterrupts();
-  
-// 	char c = UDR0;
-// 	buf_isr[i++]=c;
-// 	if(c=='\n'){
-// 	i=buf_isr[i-1]=0;
-//	isr_cmplt_flag=1;
-// 	}
-// Serial.println(c);	
-
-// interrupts();
-// }
-
-
-void serialEvent() {
+ISR(USART_RX_vect)
+{	
 isr_cmplt_flag=0;
 	char c = UDR0;
 	buf_isr[i++]=c;
 	if(c=='\n'){
 	i=buf_isr[i-1]=0;
-	isr_cmplt_flag=1;
 	}
-Serial.println(c);	
+isr_cmplt_flag=1;
 }
 
 void rc_read_values() {
@@ -173,6 +155,8 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	    delay(10);
 	    EEPROM.put(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
 	    delay(10);
+		  
+	    buf_isr[0]=0;
 	    Serial.println('1');
 	  }
 
@@ -196,7 +180,7 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	    Serial.print(cal_RCusec_max[RC_CH3]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
 	    Serial.print(cal_RCusec_max[RC_CH4]); Serial.println(',');
-
+	    buf_isr[0]=0;
 	  }
 	  else if(buf_isr[0]=='I')
 	  {
@@ -204,24 +188,26 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		decode_imu_data(&buf_isr[1]);
 		eeAddress = temp_addr;
 
-		    EEPROM.put(eeAddress,cal_MAG[X]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_MAG[Y]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_MAG[Z]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_ACCL[X]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_ACCL[Y]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_ACCL[Z]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_GYRO[X]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(float);
-		    delay(10);
-		    EEPROM.put(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(float);
-		    delay(10);
+		  EEPROM.put(eeAddress,cal_MAG[X]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_MAG[Y]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_MAG[Z]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_ACCL[X]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_ACCL[Y]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_ACCL[Z]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_GYRO[X]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  EEPROM.put(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(float);
+		  delay(10);
+		  
+		  buf_isr[0]=0;
 		  Serial.print('1');
 	  }
 	  else if(buf_isr[0]=='G')
@@ -246,7 +232,9 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		    EEPROM.get(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(float);
 		    Serial.print(cal_GYRO[X]); Serial.print(',');
 		    EEPROM.get(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(float);
-		    Serial.print(cal_GYRO[Z]); Serial.println(',');	  
+		    Serial.print(cal_GYRO[Z]); Serial.println(',');
+		  
+		  buf_isr[0]=0;
 	  }
 	}
   delay(10);
@@ -288,7 +276,7 @@ void Calibrate_RCT(void)
 	uint16_t rc_in_temp[6];
 	uint16_t j;
 		
-	for(j=0;j<1000;j++)
+	for(j=0;j<600;j++)
 	{
 		memset(rc_in_temp,0,sizeof(rc_in_temp));	
     		rc_read_values();
@@ -331,8 +319,10 @@ void Calibrate_RCT(void)
 		{
 			cal_RCusec_min[RC_CH4]=rc_in_temp[RC_CH4];
 		}
-		PORTC^=status_led;
+		PORTC&=~status_led;
 		delay(100);
+		PORTC^=status_led;
+		delay(50);
 	}
 	
 	cal_RCusec_max[RC_CH1]+=RCin_offset; cal_RCusec_min[RC_CH1]-=RCin_offset;
