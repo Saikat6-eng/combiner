@@ -171,7 +171,7 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	    EEPROM.get(eeAddress,cal_RCusec_max[RC_CH3]);  eeAddress+=sizeof(uint16_t);
 	    Serial.print(cal_RCusec_max[RC_CH3]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_max[RC_CH4]);  eeAddress+=sizeof(uint16_t);
-	    Serial.print(cal_RCusec_max[RC_CH4]); Serial.print(',');
+	    Serial.print(cal_RCusec_max[RC_CH4]); Serial.println(',');
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH1]);  eeAddress+=sizeof(uint16_t);
 	    Serial.print(cal_RCusec_max[RC_CH1]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH2]);  eeAddress+=sizeof(uint16_t);
