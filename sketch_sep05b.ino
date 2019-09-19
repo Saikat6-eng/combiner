@@ -159,7 +159,6 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	    buf_isr[0]=0;
 	    Serial.println('1');
 	  }
-
 	  else if(buf_isr[0]=='R')
 	  {
 	    //read the calibration value from eeprom for RC
@@ -172,14 +171,17 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	    Serial.print(cal_RCusec_max[RC_CH3]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_max[RC_CH4]);  eeAddress+=sizeof(uint16_t);
 	    Serial.print(cal_RCusec_max[RC_CH4]); Serial.println(',');
+	    buf_isr[0]=0;
+	  }		  
+	else if(buf_isr[0]=='S')
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH1]);  eeAddress+=sizeof(uint16_t);
-	    Serial.print(cal_RCusec_max[RC_CH1]); Serial.print(',');
+	    Serial.print(cal_RCusec_min[RC_CH1]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH2]);  eeAddress+=sizeof(uint16_t);
-	    Serial.print(cal_RCusec_max[RC_CH2]); Serial.print(',');
+	    Serial.print(cal_RCusec_min[RC_CH2]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH3]);  eeAddress+=sizeof(uint16_t);
-	    Serial.print(cal_RCusec_max[RC_CH3]); Serial.print(',');
+	    Serial.print(cal_RCusec_min[RC_CH3]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH4]);  eeAddress+=sizeof(uint16_t);
-	    Serial.print(cal_RCusec_max[RC_CH4]); Serial.println(',');
+	    Serial.print(cal_RCusec_min[RC_CH4]); Serial.println(',');
 	    buf_isr[0]=0;
 	  }
 	  else if(buf_isr[0]=='I')
