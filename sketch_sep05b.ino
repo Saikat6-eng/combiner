@@ -49,8 +49,8 @@ float cal_MAG[3]={0.0f,0.0f,0.0f};
 float cal_ACCL[3]={0.0f,0.0f,0.0f};
 float cal_GYRO[3]={0.0f,0.0f,0.0f};
 
-char buf_imu[40]={0};
-volatile char buf_isr[40]={0};
+char buf_imu[100]={0};
+volatile char buf_isr[100]={0};
 volatile char isr_cmplt_flag=0;
 int eeAddress = 0;
 int temp_addr = 16;
