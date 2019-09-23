@@ -157,7 +157,7 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	    delay(10);
 		  
 	    buf_isr[0]=0;
-	    Serial.println('1');
+	    Serial.println('O');
 	  }
 	  else if(buf_isr[0]=='R')
 	  {
@@ -210,7 +210,7 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		  delay(10);
 		  
 		  buf_isr[0]=0;
-		  Serial.print('1');
+		  Serial.print('O');
 	  }
 	  else if(buf_isr[0]=='G')
 	  {
@@ -338,5 +338,5 @@ void Calibrate_RCT(void)
 
 void decode_imu_data(char *p)
 {
-sscanf(p,"%f,%f,%f,%f,%f,%f,%f,%f,%f",cal_MAG[X],cal_MAG[Y],cal_MAG[Z],cal_ACCL[X],cal_ACCL[Y],cal_ACCL[Z],cal_GYRO[X],cal_GYRO[Y],cal_GYRO[Z]);
+sscanf(p,"%d,%d,%d,%d,%d,%d,%d,%d,%d",cal_MAG[X],cal_MAG[Y],cal_MAG[Z],cal_ACCL[X],cal_ACCL[Y],cal_ACCL[Z],cal_GYRO[X],cal_GYRO[Y],cal_GYRO[Z]);
 }
