@@ -45,9 +45,9 @@ uint16_t cal_RCusec_max[4]={0x00FF,0x00FF,0x00FF,0x00FF};
 uint16_t cal_RCusec_min[4]={0x0FFF,0x0FFF,0x0FFF,0x0FFF};
 volatile uint8_t i=0;
 
-float cal_MAG[3]={0.0f,0.0f,0.0f};
-float cal_ACCL[3]={0.0f,0.0f,0.0f};
-float cal_GYRO[3]={0.0f,0.0f,0.0f};
+int cal_MAG[3]={0,0,0};
+int cal_ACCL[3]={0,0,0};
+int cal_GYRO[3]={0,0,0};
 
 char buf_imu[100]={0};
 volatile char buf_isr[100]={0};
@@ -190,23 +190,23 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		decode_imu_data(&buf_isr[1]);
 		eeAddress = temp_addr;
 
-		  EEPROM.put(eeAddress,cal_MAG[X]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_MAG[X]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_MAG[Y]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_MAG[Y]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_MAG[Z]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_MAG[Z]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_ACCL[X]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_ACCL[X]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_ACCL[Y]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_ACCL[Y]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_ACCL[Z]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_ACCL[Z]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_GYRO[X]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_GYRO[X]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(int);
 		  delay(10);
-		  EEPROM.put(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(float);
+		  EEPROM.put(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(int);
 		  delay(10);
 		  
 		  buf_isr[0]=0;
@@ -217,23 +217,23 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	   //read calibration data for IMU 
 		eeAddress = temp_addr;
 
-		    EEPROM.get(eeAddress,cal_MAG[X]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_MAG[X]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_MAG[X]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_MAG[Y]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_MAG[Y]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_MAG[Y]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_MAG[Z]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_MAG[Z]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_MAG[Z]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_ACCL[X]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_ACCL[X]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_ACCL[X]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_ACCL[Y]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_ACCL[Y]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_ACCL[Y]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_ACCL[Z]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_ACCL[Z]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_ACCL[Z]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_GYRO[X]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_GYRO[X]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_GYRO[X]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_GYRO[X]); Serial.print(',');
-		    EEPROM.get(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(float);
+		    EEPROM.get(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_GYRO[Z]); Serial.println(',');
 		  
 		  buf_isr[0]=0;
