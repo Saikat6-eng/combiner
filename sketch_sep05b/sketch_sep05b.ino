@@ -57,7 +57,7 @@ int mag_addr = 0x10;
 int accl_addr = 0x16;
 int gyro_addr = 0x1C;
 
-ISR(USART_RX_vect)
+void isr_vect(void)
 {	
 isr_cmplt_flag=0;
 	char c = UDR0;
@@ -175,7 +175,8 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 	    Serial.print(cal_RCusec_max[RC_CH4]); Serial.println(',');
 	    buf_isr[0]=0;
 	  }		  
-	else if(buf_isr[0]=='S')
+	  else if(buf_isr[0]=='S')
+    {
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH1]);  eeAddress+=sizeof(uint16_t);
 	    Serial.print(cal_RCusec_min[RC_CH1]); Serial.print(',');
 	    EEPROM.get(eeAddress,cal_RCusec_min[RC_CH2]);  eeAddress+=sizeof(uint16_t);
@@ -197,10 +198,10 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		  EEPROM.put(eeAddress,cal_MAG[Y]);  eeAddress+=sizeof(int);
 		  delay(10);
 		  EEPROM.put(eeAddress,cal_MAG[Z]);  eeAddress+=sizeof(int);
-		  delay(10);
+		  delay(100);
 		  
 		  buf_isr[0]=0;
-		  Serial.print('O');
+		  Serial.println('O');
 	  }
 	  else if(buf_isr[0]=='L')
 	  {
@@ -212,10 +213,10 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		  EEPROM.put(eeAddress,cal_ACCL[Y]);  eeAddress+=sizeof(int);
 		  delay(10);
 		  EEPROM.put(eeAddress,cal_ACCL[Z]);  eeAddress+=sizeof(int);
-		  delay(10);
+		  delay(100);
 		  
 		  buf_isr[0] = 0;
-		  Serial.print('O');  
+		  Serial.println('O');  
 	  }
 	  else if(buf_isr[0]=='M')
 	  {
@@ -227,10 +228,10 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		  EEPROM.put(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(int);
 		  delay(10);
 		  EEPROM.put(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(int);
-		  delay(10);
+		  delay(100);
 		  
 		  buf_isr[0] = 0;
-		  Serial.print('O');  
+		  Serial.println('O');  
 	  }
 	  else if(buf_isr[0]=='G')
 	  {
@@ -252,7 +253,7 @@ UCSR0B |= (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
 		    EEPROM.get(eeAddress,cal_GYRO[X]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_GYRO[X]); Serial.print(',');
 		    EEPROM.get(eeAddress,cal_GYRO[Y]);  eeAddress+=sizeof(int);
-		    Serial.print(cal_GYRO[X]); Serial.print(',');
+		    Serial.print(cal_GYRO[Y]); Serial.print(',');
 		    EEPROM.get(eeAddress,cal_GYRO[Z]);  eeAddress+=sizeof(int);
 		    Serial.print(cal_GYRO[Z]); Serial.println(',');
 		  
@@ -358,5 +359,7 @@ void Calibrate_RCT(void)
 
 void decode_imu_data(char *p, int *temp)
 {
-sscanf(p,"%d,%d,%d",temp++,temp++,temp);
+int copy[3]={0};
+sscanf(p,"%d,%d,%d",&copy[X],&copy[Y],&copy[Z]);
+memcpy(temp,copy,sizeof(copy));
 }
