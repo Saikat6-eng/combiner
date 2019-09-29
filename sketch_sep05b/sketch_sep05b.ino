@@ -50,8 +50,9 @@ int cal_ACCL[3]={0,0,0};
 int cal_GYRO[3]={0,0,0};
 
 char buf_imu[100]={0};
-volatile char buf_isr[100]={0};
+volatile char buf_isr[50]={0};
 volatile char isr_cmplt_flag=0;
+volatile char c=0;
 int eeAddress = 0x00;
 int mag_addr = 0x10;
 int accl_addr = 0x16;
@@ -60,11 +61,17 @@ int gyro_addr = 0x1C;
 void isr_vect(void)
 {	
 isr_cmplt_flag=0;
-	char c = UDR0;
-	buf_isr[i++]=c;
-	if(c=='\n'){
-	i=buf_isr[i-1]=0;
-	}
+  c = UDR0;
+  switch (c)
+  {
+  default: 
+      buf_isr[i++]=c;
+      break;
+  case '\n':
+      i=buf_isr[i]=0;
+      break;
+  } 
+  
 isr_cmplt_flag=1;
 }
 
