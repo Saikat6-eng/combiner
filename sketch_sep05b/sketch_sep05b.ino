@@ -30,7 +30,7 @@
 #define RC_CH7_INPUT  8
 #define RC_CH8_INPUT  11
 
-#define RCin_offset 3
+#define RCin_offset 2
 
 void Calibrate_RCT(void);
 void decode_imu_data(char *,uint32_t *);
@@ -306,12 +306,12 @@ void Calibrate_RCT(void)
 	uint16_t rc_in_temp[6];
 	uint16_t j;
 		
-	for(j=0;j<600;j++)
+	for(j=0;j<400;j++)
 	{
 		memset(rc_in_temp,0,sizeof(rc_in_temp));	
-    		rc_read_values();
-   	memcpy(rc_in_temp,(const void *)rc_values,sizeof(rc_in_temp));
-    
+    	rc_read_values();
+		memcpy(rc_in_temp,(const void *)rc_values,sizeof(rc_in_temp));
+	
 //Take Max value of pwm Max width time in micro_sec 
 		
 		if(rc_in_temp[RC_CH1]>cal_RCusec_max[RC_CH1])
@@ -349,17 +349,18 @@ void Calibrate_RCT(void)
 		{
 			cal_RCusec_min[RC_CH4]=rc_in_temp[RC_CH4];
 		}
+		
 		PORTC&=~status_led;
 		delay(100);
 		PORTC|=status_led;
 		delay(50);
 	}
-	
+  
 	cal_RCusec_max[RC_CH1]+=RCin_offset; cal_RCusec_min[RC_CH1]-=RCin_offset;
 	cal_RCusec_max[RC_CH2]+=RCin_offset; cal_RCusec_min[RC_CH2]-=RCin_offset;
 	cal_RCusec_max[RC_CH3]+=RCin_offset; cal_RCusec_min[RC_CH3]-=RCin_offset;
 	cal_RCusec_max[RC_CH4]+=RCin_offset; cal_RCusec_min[RC_CH4]-=RCin_offset;
-  
+	
   PORTC&=~status_led;
   delay(100);
 }
