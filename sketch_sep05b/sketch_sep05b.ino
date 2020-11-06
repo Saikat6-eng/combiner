@@ -20,7 +20,7 @@
 #define X 0
 #define Y 1
 #define Z 2
-
+//atmega pins
 #define RC_CH1_INPUT  2
 #define RC_CH2_INPUT  3
 #define RC_CH3_INPUT  4
@@ -89,7 +89,7 @@ void calc_input(uint8_t channel, uint8_t input_pin) {
   } else {
     rc_compare = (uint16_t)(micros() - rc_start[channel]);
     temp = rc_compare&0x0FFF;
-    rc_shared[channel] = (uint16_t)((1-alpha)*rc_shared[channel] + (alpha * temp));    
+    rc_shared[channel] = (rc_shared[channel] * 6 + temp ) >> 3;   
   }
 }
 
